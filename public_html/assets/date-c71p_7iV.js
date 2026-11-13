@@ -1,0 +1,1 @@
+import{x as r}from"./index-CcUBDtGB.js";const o="YYYY-MM-DD";function f(t){if(t)return typeof t=="string"?t:t.format(o)}function a(t){return t?r(t):void 0}function i(t){return t?r(t).format("DD MMM YYYY"):""}function Y(t){return t?r(`${t}-01`).format("MMM YYYY"):""}export{i as a,a as b,Y as f,f as t};

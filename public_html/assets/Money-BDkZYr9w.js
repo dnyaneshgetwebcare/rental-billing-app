@@ -1,0 +1,1 @@
+import{j as n,T as r,f as o}from"./index-CcUBDtGB.js";function d({value:e,strong:a,type:t}){return n.jsx(r.Text,{className:"money",strong:a,type:t,children:o(e)})}const s={paid:"green",partial:"orange",unpaid:"red",cancelled:"default",active:"blue",ended:"default"};function l(e){return s[e]??"default"}export{d as M,l as s};

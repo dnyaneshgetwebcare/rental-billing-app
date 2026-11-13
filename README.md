@@ -3,8 +3,9 @@
 Warehouse rent billing and accounting for multiple companies: agreements with yearly increase, automatic monthly GST bills, WhatsApp sharing, receipts, purchases, expenses, double-entry ledger, trial balance and GST summaries.
 
 - `backend/`: Yii3 JSON API (PHP 8.2 / 8.3, MySQL). Deployed to `~/billing-api/`, outside the web root.
-- `frontend/`: React + Vite + antd, installable as a PWA. Built on the PC into `public_html/`.
 - `public_html/`: what the web server serves: the React build, `api/index.php` (entry to the API), `.htaccess`, `uploads/`.
+
+The React source is in [rental-billing-frontend](https://github.com/dnyaneshgetwebcare/rental-billing-frontend). Build it there and copy `dist/` into `public_html/` (leave `api/`, `uploads/`, and `.htaccess` in place).
 
 No Node.js or Composer is needed on the server.
 
@@ -14,7 +15,6 @@ No Node.js or Composer is needed on the server.
 docker compose --profile db up -d                 # PHP 8.2 on :8082, PHP 8.3 on :8083, MySQL on :3317
 docker compose exec php82 php yii migrate:up --no-interaction
 docker compose exec php82 php yii user:create admin@example.com "Admin" admin12345
-docker compose run --rm --no-deps node npm run build   # or: docker compose up node (Vite dev server on :5173)
 ```
 
 Open http://localhost:8082, log in, and create the first company. The chart of accounts and GST rates are seeded automatically.
@@ -23,7 +23,6 @@ Tests:
 
 ```powershell
 docker compose exec php82 vendor/bin/codecept run       # unit, API, console (repeat on php83)
-docker compose run --rm --no-deps node npm test
 powershell -File scripts/api-smoke.ps1                  # end-to-end API check (add -Base http://localhost:8083/api/v1 for 8.3)
 ```
 
@@ -33,7 +32,7 @@ powershell -File scripts/api-smoke.ps1                  # end-to-end API check (
 powershell -ExecutionPolicy Bypass -File scripts/release.ps1
 ```
 
-This runs the tests, builds the frontend, runs `composer install --no-dev` inside the container and writes `dist/<timestamp>/billing-api.zip` and `public_html.zip`. The last three releases are kept so you can roll back.
+This runs the backend tests, runs `composer install --no-dev` inside the container and writes `dist/<timestamp>/billing-api.zip` and `public_html.zip`. The last three releases are kept so you can roll back. The React build already in `public_html/` is packed as-is.
 
 1. Extract `billing-api.zip` into `~/billing-api/`. The existing `.env` is not overwritten.
 2. Extract `public_html.zip` into `~/public_html/`. `uploads/` is not in the archive.

@@ -17,10 +17,9 @@ docker compose up -d php82 | Out-Null
 
 if (-not $SkipTests) {
     Step 'Backend tests (PHP 8.2)' { docker compose exec -T php82 vendor/bin/codecept run Unit --no-colors }
-    Step 'Frontend tests' { docker compose run --rm -T --no-deps node npm test }
 }
 
-Step 'Frontend build' { docker compose run --rm -T --no-deps node npm run build }
+# The React source lives in rental-billing-frontend. public_html already holds that build.
 
 $out = 'runtime/release'
 Step 'Package backend (composer --no-dev)' { Get-Content -Raw scripts/package.php | docker compose exec -T php82 php -- backend /var/www/billing-api "/var/www/billing-api/$out/billing-api.zip" }

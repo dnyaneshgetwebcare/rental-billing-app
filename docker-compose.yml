@@ -1,0 +1,86 @@
+# Same public_html on both versions, matching a GoDaddy upload target.
+#   PHP 8.2 → http://localhost:8082
+#   PHP 8.3 → http://localhost:8083
+# backend/ is mounted at /var/www/billing-api, the same place as ~/billing-api on GoDaddy.
+#
+# vendor/ and node_modules/ live in named volumes: writing thousands of small files
+# to a Windows drive through Docker is too slow. scripts/release.ps1 builds the
+# GoDaddy zip (with vendor/) inside the container.
+#
+# Database: point backend/.env at your Windows MySQL (DB_HOST=host.docker.internal),
+# or start the bundled MySQL 8.0 with:  docker compose --profile db up -d
+# (then DB_HOST=mysql, DB_PORT=3306; from Windows it is localhost:3317).
+#
+# Common commands:
+#   docker compose run --rm php82 composer install
+#   docker compose run --rm php82 php yii migrate:up
+#   docker compose run --rm node npm install
+#   docker compose up -d php82 node        (API on :8082, Vite dev server on :5173)
+
+x-php: &php
+  volumes:
+    - ./public_html:/var/www/html
+    - ./backend:/var/www/billing-api
+    - backend-vendor:/var/www/billing-api/vendor
+    - composer-cache:/root/.cache/composer
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  working_dir: /var/www/billing-api
+
+services:
+  php82:
+    <<: *php
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        PHP_VERSION: "8.2"
+    image: adhiraj-php:8.2
+    ports:
+      - "8082:80"
+
+  php83:
+    <<: *php
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        PHP_VERSION: "8.3"
+    image: adhiraj-php:8.3
+    ports:
+      - "8083:80"
+
+  node:
+    image: node:22-alpine
+    working_dir: /app/frontend
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    environment:
+      API_PROXY: http://php82:80
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+      - ./public_html:/app/public_html
+      - frontend-node-modules:/app/frontend/node_modules
+      - npm-cache:/root/.npm
+
+  mysql:
+    profiles: ["db"]
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: billing
+      MYSQL_USER: billing
+      MYSQL_PASSWORD: billing
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "3317:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  backend-vendor:
+  composer-cache:
+  frontend-node-modules:
+  npm-cache:
+  mysql-data:

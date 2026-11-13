@@ -1,0 +1,21 @@
+# Release archives
+/dist/
+
+# Frontend dependencies and build output (rebuilt by npm run build)
+/frontend/node_modules/
+/public_html/assets/
+/public_html/icons/
+/public_html/index.html
+/public_html/manifest.webmanifest
+/public_html/sw.js
+/public_html/workbox-*.js
+
+# User uploads
+/public_html/uploads/*
+!/public_html/uploads/.htaccess
+
+.idea/
+.vscode/
+.cursor/
+Thumbs.db
+.DS_Store

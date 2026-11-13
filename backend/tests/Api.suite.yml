@@ -1,0 +1,8 @@
+# Runs against Apache inside the php82 / php83 container:
+#   docker compose exec php83 vendor/bin/codecept run Api
+actor: ApiTester
+modules:
+  enabled:
+    - REST:
+        url: http://127.0.0.1/api
+        depends: PhpBrowser
